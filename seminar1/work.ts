@@ -1,18 +1,18 @@
 // ~~는 ~살이고 ~에 살고 있고 ~를 좋아합니다.
 
-interface Info {
+interface Server {
   name: string;
   age: number;
   live: string;
   like: string;
 };
 
-interface Intro {
-  members: Info[];
-  introduce(arr: Info[]): void;
+interface Info {
+  members: Server[];
+  introduce(arr: Server[]): void;
 };
 
-const members: Info[] = [
+const members: Server[] = [
   {
     name: '김소현',
     age: 23,
@@ -51,9 +51,9 @@ const members: Info[] = [
   },
 ];
 
-const intro: Intro = {
+const intro: Info = {
   members: members,
-  introduce(members: Info[]) {
+  introduce(members: Server[]) {
     members.map((member) => {
       console.log(`${member.name}는(은) ${member.age}살이고, ${member.live}에 살고 있으며 ${member.like}를(을) 좋아합니다.`);
     });
