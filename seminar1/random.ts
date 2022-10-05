@@ -11,10 +11,13 @@ interface Member {
   group: string;
 };
 
+type DinnerArray = Member[] | string[];
+
 interface Dinner {
   member: Member[];
-  shuffle(array: Member[]): Member[];
-  organize(array: Member[]): void;
+  menu: string[];
+  shuffle(array: DinnerArray): DinnerArray;
+  organize(): void;
 };
 
 const dinner: Dinner = {
@@ -40,15 +43,17 @@ const dinner: Dinner = {
       group: "ob",
     },
   ],
-  shuffle(array: Member[]) {
+  menu: ["떡볶이", "찜닭", "곱창", "막창", "마제소바"],
+  shuffle(array: DinnerArray) {
     array.sort(() => Math.random() - 0.5);
     return array;
   },
-  organize(array: Member[]) {
-    const dinnerMember: Member[] = this.shuffle(array);
+  organize() {
+    const dinnerMember: Member[] = this.shuffle(this.member) as Member[];
+    const dinnerMenu: string[] = this.shuffle(this.menu) as string[];
 
-    console.log(`결과 ${dinnerMember[0].name}, ${dinnerMember[1].name}`);
+    console.log(`결과 ${dinnerMember[0].name}, ${dinnerMember[1].name}, 저녁 메뉴는 "${dinnerMenu[0]}" 입니다.`);
   },
 };
 
-dinner.organize(dinner.member);
+dinner.organize();
