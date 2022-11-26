@@ -1,15 +1,11 @@
-import { prisma } from "@prisma/client";
 import { Router } from "express";
 import { body } from "express-validator";
 import { userController } from "../controller";
-import { UserSignInDTO } from "../interfaces/UserSignInDto";
 import { auth } from "../middlewares";
-import bcrypt from "bcryptjs";
-import { sc } from "../constants";
 
 const router: Router = Router();
 
-router.get("/:userId", auth, userController.getUserById);
+router.get("/search", userController.searchUserByName);
 
 //* 회원가입 POST api/user
 router.post(
@@ -38,5 +34,7 @@ router.patch("/:userId", userController.updateUser);
 
 //* 유저 정보 삭제  DELETE api/user/:userId
 router.delete("/:userId", userController.deleteUser);
+
+router.get("/:userId", auth, userController.getUserById);
 
 export default router;

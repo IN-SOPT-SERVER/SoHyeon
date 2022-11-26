@@ -1,15 +1,16 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { sc } from "../constants";
-import { UserCreateDTO } from "../interfaces/userCreateDto";
-import { UserSignInDTO } from "../interfaces/UserSignInDto";
+import { UserCreateDTO } from "../interfaces/user/UserCreateDto";
+import { UserSignInDTO } from "../interfaces/user/UserSignInDto";
+
 const prisma = new PrismaClient();
 
 //* userId로 유저 조회
 const getUserById = async (userId: number) => {
   const user = await prisma.user.findUnique({
     where: {
-      id: userId,
+      user_id: userId,
     },
   });
 
@@ -46,10 +47,10 @@ const signIn = async (userSignInDto: UserSignInDTO) => {
 
     //? bcrypt가 DB에 저장된 기존 password와 넘겨 받은 password를 대조하고,
     //? match false시 401을 리턴
-    const isMatch = await bcrypt.compare(userSignInDto.password, user.password);
+    const isMatch = await bcrypt.compare(userSignInDto.password, user.password as string);
     if (!isMatch) return sc.UNAUTHORIZED;
 
-    return user.id;
+    return user.user_id;
   } catch (error) {
     console.log(error);
     throw error;
@@ -57,9 +58,11 @@ const signIn = async (userSignInDto: UserSignInDTO) => {
 };
 
 //* 유저 정보 전체 조회
-const getAllUser = async () => {
-  const data = await prisma.user.findMany();
-
+const getAllUser = async (page: number, limit: number) => {
+  const data = await prisma.user.findMany({
+    skip: (page - 1) * limit,
+    take: limit,
+  });
   return data;
 }
 
@@ -67,7 +70,7 @@ const getAllUser = async () => {
 const updateUser = async (userId: number, name: string) => {
   const data = await prisma.user.update({
     where: {
-      id: userId
+      user_id: userId
     },
     data: {
       userName: name
@@ -81,9 +84,52 @@ const updateUser = async (userId: number, name: string) => {
 const deleteUser = async (userId: number) => {
   await prisma.user.delete({
     where: {
-      id: userId
+      user_id: userId
     }
   });
+}
+
+//* 유저 정보 검색
+const searchUserByName = async (keyword: string, option: string) => {
+  if (option === "desc") {
+    const data = await prisma.user.findMany({
+      where: {
+        userName: {
+          contains: keyword,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      }
+    });
+    return data;
+  }
+
+  if (option === "asc") {
+    const data = await prisma.user.findMany({
+      where: {
+        userName: {
+          contains: keyword,
+        },
+      },
+      orderBy: {
+        createdAt: "asc",
+      }
+    });
+    return data;
+  }
+
+  if (option === "nameDesc") {
+    const data = await prisma.user.findMany({
+      where: {
+        userName: keyword,
+      },
+      orderBy: {
+        userName: "desc"
+      },
+    });
+    return data;
+  }
 }
 
 
@@ -94,6 +140,7 @@ const userService = {
   updateUser,
   deleteUser,
   signIn,
+  searchUserByName,
 };
 
 export default userService;

@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { rm, sc } from "../constants";
 import { fail, success } from "../constants/response";
-import { UserCreateDTO } from "../interfaces/userCreateDto";
-import { UserSignInDTO } from "../interfaces/UserSignInDto";
+import { UserCreateDTO } from "../interfaces/user/UserCreateDto";
+import { UserSignInDTO } from "../interfaces/user/UserSignInDto";
 import jwtHandler from "../modules/jwtHandler";
 import { userService } from "../service";
 
@@ -35,10 +35,10 @@ const createUser = async (req: Request, res: Response) => {
     return res.status(sc.BAD_REQUEST).send(fail(sc.BAD_REQUEST, rm.SIGNUP_FAIL))
   }
 
-  const accessToken = jwtHandler.sign(data.id);
+  const accessToken = jwtHandler.sign(data.user_id);
 
   const result = {
-    id: data.id,
+    id: data.user_id,
     name: data.userName,
     accessToken,
   };
@@ -80,8 +80,11 @@ const signInUser = async (req: Request, res: Response) => {
 
 //* 유저 정보 전체 조회
 const getAllUser = async (req: Request, res: Response) => {
-  const data = await userService.getAllUser();
-  
+  const { page, limit } = req.query;
+  if (!page || !limit) {
+    return res.status(sc.BAD_REQUEST).send(fail(sc.BAD_REQUEST, rm.BAD_REQUEST));
+  }
+  const data = await userService.getAllUser(+page, +limit);
   return res.status(200).json({ status: 200, message: "유저 조회 성공", data });
 }
 
@@ -112,6 +115,23 @@ const deleteUser = async (req: Request, res: Response) => {
   return res.status(200).json({ status: 200, message: "유저 삭제 성공" });
 }
 
+// * 유저 정보 검색
+const searchUserByName = async (req: Request, res: Response) => {
+  const { keyword, option } = req.query;
+
+  if (!keyword || !option) {
+    return res.status(sc.BAD_REQUEST).send(fail(sc.BAD_REQUEST, rm.BAD_REQUEST));
+  }
+
+  const data = await userService.searchUserByName(keyword as string, option as string);
+
+  if (!data) {
+    return res.status(sc.NOT_FOUND).send(fail(sc.NOT_FOUND, rm.NOT_FOUND));
+  }
+
+  return res.status(sc.OK).send(success(sc.OK, rm.SEARCH_USER, data));
+}
+
 const userController = {
   getUserById,
   createUser,
@@ -119,6 +139,7 @@ const userController = {
   updateUser,
   deleteUser,
   signInUser,
+  searchUserByName,
 };
 
 export default userController;
