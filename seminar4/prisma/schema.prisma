@@ -8,9 +8,38 @@ datasource db {
 }
 
 model User {
-  id       Int    @id(map: "user_pk") @unique(map: "user_id_uindex") @default(autoincrement())
-  userName String @db.VarChar(100)
+  user_id  Int       @id @default(autoincrement())
   age      Int?
-  email    String @db.VarChar(400)
-  password String @db.VarChar(400)
+  email    String?   @db.VarChar(40)
+  password String?   @db.VarChar(40)
+  gender   String?
+  birth    DateTime? @db.Date
+  userName String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Image {
+  id        Int       @id(map: "image_pk") @unique(map: "image_id_uindex") @default(autoincrement())
+  image     String    @db.VarChar(800)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model ticket {
+  ticket_id Int       @id @unique @default(autoincrement())
+  from      String?
+  to        String?
+  date      DateTime? @db.Date
+  seat_num  Int?
+  trail     String?
+}
+
+model user_ticket {
+  user_ticket_id Int     @id @unique @default(autoincrement())
+  user_id        Int?
+  ticket_id      Int?
+  seat           String? @db.VarChar(40)
+  cabin          Int?
+  trail_num      String? @db.VarChar(40)
 }
