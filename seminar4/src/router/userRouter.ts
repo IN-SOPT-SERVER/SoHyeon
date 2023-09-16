@@ -1,12 +1,34 @@
+import { prisma } from "@prisma/client";
 import { Router } from "express";
+import { body } from "express-validator";
 import { userController } from "../controller";
+import { UserSignInDTO } from "../interfaces/UserSignInDto";
+import { auth } from "../middlewares";
+import bcrypt from "bcryptjs";
+import { sc } from "../constants";
 
 const router: Router = Router();
 
-router.get("/:userId", userController.getUserById);
+router.get("/:userId", auth, userController.getUserById);
 
-//* 유저 정보 생성 POST api/user
-router.post("/", userController.createUser);
+//* 회원가입 POST api/user
+router.post(
+  "/",
+  [body("name").notEmpty(), body("email").notEmpty(), body("password").isLength({ min: 6 })],
+  userController.createUser
+);
+
+//* 로그인
+router.post(
+  "/signin",
+  [
+    body("email").notEmpty(),
+    body("email").isEmail(),
+    body("password").notEmpty(),
+    body("password").isLength({ min: 6 }),
+  ],
+  userController.signInUser
+);
 
 //* 전체 유저 정보 조회  GET api/user
 router.get("/", userController.getAllUser);
